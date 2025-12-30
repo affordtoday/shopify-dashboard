@@ -1,0 +1,7 @@
+{
+  "name": "shopify-free-dashboard",
+  "version": "1.0.0",
+  "dependencies": {
+    "crypto": "^1.0.1"
+  }
+}
