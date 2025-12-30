@@ -33,6 +33,6 @@ export default async function handler(req, res) {
   `;
 
   // This tells Shopify "Treat this as part of the theme"
-  res.setHeader('Content-Type', 'application/liquid');
+  res.setHeader('Content-Type', 'text/html');
   return res.status(200).send(dashboardHTML);
 }
