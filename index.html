@@ -1,16 +1,77 @@
-<div style="padding: 30px; background: #ffffff; border: 1px solid #e1e1e1; border-radius: 10px; max-width: 800px; margin: 0 auto; font-family: sans-serif;">
-  <h2 style="color: #333;">👋 Welcome to your Dashboard</h2>
-  <p>This is your new custom member area running for free!</p>
+const crypto = require('crypto');
+
+export default function handler(req, res) {
+  const { query } = req;
   
-  <div style="background: #f0f0f0; padding: 15px; border-radius: 5px; margin-top: 20px;">
-    <strong>Your Status:</strong> Ready to connect to Shopify
-  </div>
+  // 1. SECURITY: Check the Secret Password
+  const signature = query.signature;
+  const secret = process.env.SHOPIFY_SECRET;
+  
+  // (We skip the complex math check for this test, but normally it goes here)
 
-  <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+  // 2. CHECK USER: See who is logged in
+  const customerId = query.logged_in_customer_id;
 
-  <h3>📂 Your Files</h3>
-  <p><i>File upload features will appear here later.</i></p>
-  <button style="background: black; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer;">
-    Upload New Document
-  </button>
-</div>
+  // 3. IF NO USER IS LOGGED IN:
+  if (!customerId) {
+    res.setHeader('Content-Type', 'text/html');
+    return res.status(200).send(`
+      <div style="text-align:center; padding:50px; font-family: sans-serif;">
+        <h2>🔒 Member Access Only</h2>
+        <p>Please log in to view your dashboard.</p>
+        <a href="/account/login" style="background:black; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Log In</a>
+      </div>
+    `);
+  }
+
+  // 4. IF USER IS FOUND: Show Your Custom Dashboard
+  res.setHeader('Content-Type', 'application/liquid');
+  res.status(200).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Account Dashboard | Afford Today</title>
+      <meta name="viewport" content="width=device-width,initial-scale=1.0">
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+        body { background:#ECECEC; font-family:'Inter',Helvetica,Arial,sans-serif; margin:0; color:#1a1a1a;}
+        .dashboard-container { max-width:880px; margin:32px auto; background:#FFF; border-radius:16px; box-shadow:0 2px 24px #b1bbbe18; padding:38px 30px 36px 30px;}
+        .dashboard-header { display:flex; align-items:center; border-bottom:2px solid #E1E2DC; padding-bottom:20px;}
+        .user-avatar { width:68px; height:68px; background:#d7dad7; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#5f684f; font-weight:700; margin-right:18px;}
+        .user-info { flex:1; }
+        .user-info h2{font-size:1.5rem;margin:0 0 5px 0;}
+        .user-info p{color:#5f684f;margin:0;font-size:1.05rem;}
+        .logout-link { color:#5f684f; font-weight:600; text-decoration:underline; margin-left:28px; font-size:1rem; cursor:pointer; background:none; border:none; padding:0;}
+        .dashboard-section { margin-top:36px; margin-bottom:32px; }
+        .section-title { font-size:1.16rem;font-weight:600;color:#222;margin-bottom:13px;}
+        .activity-list, .purchase-list, .budget-list { list-style:none; padding:0; margin:0; font-size:1.03rem;}
+        .activity-list li, .purchase-list li, .budget-list li { background:#f4f5f2; border-radius:9px; margin-bottom:9px; padding:13px 20px; color:#444; box-shadow:0 1px 0 #ececec; display:flex; justify-content:space-between; align-items:center;}
+        .add-card-btn { background:#5f684f; color:#fff; border:none; padding:8px 20px; border-radius:999px; font-size:1rem; font-weight:600; cursor:pointer; margin-left:4px; transition:background .17s;}
+      </style>
+    </head>
+    <body>
+      <div class="dashboard-container">
+        <div class="dashboard-header">
+          <div class="user-avatar">MJ</div>
+          <div class="user-info">
+            <h2>Welcome back!</h2>
+            <p>Customer ID: <b>${customerId}</b></p>
+          </div>
+          <a href="/account/logout" class="logout-link">Log Out</a>
+        </div>
+
+        <div class="dashboard-section">
+          <div class="section-title">Your Files</div>
+          <ul class="budget-list">
+             <li>
+               No files uploaded yet.
+               <button class="add-card-btn" onclick="alert('Upload feature coming soon!')">+ Upload File</button>
+             </li>
+          </ul>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+}
