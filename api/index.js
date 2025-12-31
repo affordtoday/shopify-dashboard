@@ -16,10 +16,9 @@ export default function handler(req, res) {
     `);
   }
 
-  // 2. IF LOGGED IN: Show Your Custom Dashboard
+  // 2. IF LOGGED IN: Show Your Full Custom Dashboard
   res.setHeader('Content-Type', 'application/liquid');
   
-  // We use backticks (`) to hold your big HTML block
   res.status(200).send(`
     {% layout none %}
     <!DOCTYPE html>
@@ -77,13 +76,49 @@ export default function handler(req, res) {
     </head>
     <body>
       <div class="dashboard-container">
+        
         <div class="dashboard-header">
           <div class="user-avatar" aria-label="User Initials">MJ</div>
           <div class="user-info">
             <h2>Welcome, Member #${customerId}!</h2>
-            <p>Email: {{ customer.email }} <a href="/account" class="profile-edit-link">Edit Profile</a></p>
+            <p>Email: {{ customer.email }} <a href="#" class="profile-edit-link">Edit Profile</a></p>
           </div>
           <a href="/account/logout" class="logout-link">Log Out</a>
+        </div>
+
+        <div class="dashboard-section">
+          <div class="section-title">Account Activity</div>
+          <ul class="activity-list">
+            <li>Signed up &amp; verified email – Feb 14, 2024</li>
+            <li>Downloaded Budget Calculator – Mar 3, 2024</li>
+            <li>Viewed case study: Wisconsin $18K Wedding – Mar 4, 2024</li>
+            <li>Redeemed 13% discount on vendor purchase – Mar 17, 2024</li>
+          </ul>
+        </div>
+
+        <div class="dashboard-section">
+          <div class="section-title">Payment Methods</div>
+          <div class="payment-cards">
+            <div class="card-pill">Visa •••• 4242 <span>Exp 12/27</span></div>
+            <div class="card-pill">Mastercard •••• 6054 <span>Exp 08/25</span></div>
+            <button class="add-card-btn">+ Add New Card</button>
+          </div>
+        </div>
+
+        <div class="dashboard-section">
+          <div class="section-title">Purchase History</div>
+          <ul class="purchase-list">
+            <li>
+              #10009 – $149.00 – Mar 17, 2024
+              <span class="order-link">Download Invoice</span>
+              <button class="return-btn" onclick="openReturnModal('10009')">Return</button>
+            </li>
+            <li>
+              #10008 – $32.00 – Mar 5, 2024
+              <span class="order-link">Download Invoice</span>
+              <button class="return-btn" onclick="openReturnModal('10008')">Return</button>
+            </li>
+          </ul>
         </div>
 
         <div class="dashboard-section">
@@ -93,20 +128,56 @@ export default function handler(req, res) {
               2024 Wedding Budget.xlsx – <span class="budget-link">Download</span>
             </li>
             <li>
-              <button class="add-card-btn" style="margin-left:0;" onclick="alert('Database Connection Required for Uploads')">+ Add/Upload New Template</button>
+              50th Birthday Bash - Budget.pdf – <span class="budget-link">Download</span>
+            </li>
+            <li>
+              <button class="add-card-btn" style="margin-left:0;">+ Add/Upload New Template</button>
             </li>
           </ul>
+          <div style="margin-top:10px;font-size:0.96rem; color:#5f684f;">
+            Store your custom budget planners here for access anytime.
+          </div>
         </div>
-        
-        <div class="dashboard-section">
-          <div class="section-title">Purchase History</div>
-          <p><i>History loading...</i></p>
-        </div>
+      </div>
 
+      <div class="modal" id="returnModal" tabindex="-1">
+        <div class="modal-content">
+          <div class="modal-header">Request a Return</div>
+          <form id="returnForm">
+            <input type="hidden" name="orderId" id="orderIdField" />
+            <label for="reason">Reason for Return (required):</label>
+            <textarea id="reason" name="reason" required placeholder="Briefly describe why you want to return this item." aria-required="true"></textarea>
+            <label for="photo">Attach photo(s) (optional):</label>
+            <input type="file" id="photo" name="photo" accept="image/*" multiple>
+            <div>
+              <input type="submit" value="Send Return Request" />
+              <button type="button" class="close-modal" onclick="closeReturnModal()">Cancel</button>
+            </div>
+          </form>
+          <div class="success-msg" id="returnSuccessMessage" style="display:none;">
+            Thank you! Your request has been submitted. We will review and email you next steps.
+          </div>
+        </div>
       </div>
 
       <script>
-         // ... (Your modal scripts will go here if needed) ...
+        function openReturnModal(orderId) {
+          document.getElementById('returnModal').classList.add('active');
+          document.getElementById('orderIdField').value = orderId;
+          document.getElementById('returnForm').reset();
+          document.getElementById('returnSuccessMessage').style.display='none';
+        }
+        function closeReturnModal() {
+          document.getElementById('returnModal').classList.remove('active');
+        }
+        document.getElementById('returnForm').onsubmit = function(e){
+          e.preventDefault();
+          document.getElementById('returnSuccessMessage').style.display='block';
+          setTimeout(closeReturnModal, 2800);
+        }
+        window.addEventListener('keydown',function(e){
+          if(e.key==="Escape") closeReturnModal();
+        });
       </script>
     </body>
     </html>
